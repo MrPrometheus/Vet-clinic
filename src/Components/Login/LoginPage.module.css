@@ -1,0 +1,104 @@
+:root {
+    /* COLORS */
+    --white: #e9e9e9;
+    --gray: #333;
+    --blue: #0367a6;
+    --lightblue: #008997;
+
+    /* RADII */
+    --button-radius: 0.7rem;
+
+    /* SIZES */
+    --max-width: 1006px;
+    --max-height: 626px;
+    --min-width: 600px;
+
+    font-size: 16px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+    Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+}
+
+.root {
+    display: flex;
+    flex-grow: 1;
+    align-items: center;
+    margin: -16px;
+    background-image: url("assets/backgroundLogin.png");
+    background-attachment: fixed;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+.container {
+    display: flex;
+    margin-left: auto;
+    margin-right: auto;
+    background-color: white;
+    border-radius: 32px;
+    box-shadow: 0 8px 25px 3px rgba(0, 0, 0, 0.25);
+    height: var(--max-height);
+    max-width: var(--max-width);
+    min-width: var(--min-width);
+    overflow: hidden;
+    position: relative;
+    width: 100%;
+}
+
+.form_container {
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+}
+
+.form_name {
+    margin-top: 1rem;
+    margin-bottom: 4rem;
+    font-size: 32px;
+    font-weight: 500;
+    width: 100%;
+    text-align: center;
+}
+
+.input_style {
+    border: 1px solid rgb(213, 213, 213);
+    box-sizing: border-box;
+    border-radius: 8px;
+    font-size: 16px;
+    line-height: 19px;
+    height: 48px;
+}
+
+.form_input {
+    margin-left: 3rem;
+    margin-right: 3rem;
+}
+
+.form_submit {
+    text-align: center;
+    flex-grow: 1;
+}
+
+.form_button_submit {
+    margin-top: 1rem;
+    width: calc(100% - 6rem);
+    background: #34ACE9;
+    box-shadow: 0 2px 2px rgba(0, 0, 0, 0.24);
+    border-radius: 6px;
+    border: none;
+    height: 48px;
+}
+
+.image {
+    width: 50%;
+    background-attachment: fixed;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: auto;
+    background-image: url("assets/LoginImage.png");
+}
+
+.version_container {
+    text-align: center;
+    flex-grow: 0.7;
+}

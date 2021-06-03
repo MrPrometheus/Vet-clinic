@@ -1,0 +1,7 @@
+.notification {
+    z-index: 9999 !important;
+}
+
+.ant-popover {
+    z-index: 0;
+}
