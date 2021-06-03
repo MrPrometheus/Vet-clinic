@@ -1,17 +1,32 @@
-import { Layout } from 'antd'
+import { Button, Layout } from 'antd'
+import AuthContext from './context/AuthContext'
 import MainRoutes from './routing/MainRoutes'
-import React from 'react'
+import React, { useContext } from 'react'
 import SideBar from './Navigation/SideBar'
-import classes from '../App.module.css'
+import classes from './MainComponent.module.css'
 
 const { Footer, Header, Content } = Layout
 
 export const MainComponent = () => {
+  const { toggleIsAuth } = useContext(AuthContext)
   return (
     <>
       <SideBar />
       <Layout className={classes.siteLayout}>
-        <Header className={classes.siteLayoutBackground} style={{ padding: 0, backgroundColor: 'white' }} />
+        <Header
+          className={classes.siteLayoutBackground}
+          style={{
+            padding: 0,
+            backgroundColor: 'white',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'flex-end',
+          }}
+        >
+          <Button style={{ marginRight: '16px' }} onClick={() => toggleIsAuth && toggleIsAuth(false)}>
+            Выход
+          </Button>
+        </Header>
         <Content style={{ margin: '16px 16px 0 16px' }}>
           <div
             className={classes.siteLayoutBackground}
