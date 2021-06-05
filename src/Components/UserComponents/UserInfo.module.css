@@ -1,0 +1,9 @@
+.editableRow .antFormItemExplain {
+    position: absolute;
+    top: 100%;
+    font-size: 12px;
+}
+.form_input {
+    flex-grow: 1;
+    margin-right: 25px;
+}

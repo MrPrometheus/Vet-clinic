@@ -1,13 +1,17 @@
 import { Layout, Menu } from 'antd'
+import { Link } from 'react-router-dom'
 const { Sider } = Layout
-import { UploadOutlined, UserOutlined, VideoCameraOutlined } from '@ant-design/icons'
+import { UserOutlined } from '@ant-design/icons'
 
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 
+import AuthContext from '../context/AuthContext'
 import classes from './SideBar.module.css'
+import routes from '../routing/routes'
 
 export const SideBar = () => {
   const [collasped, setCollapsed] = useState<boolean>(() => false)
+  const { typeAuth } = useContext(AuthContext)
 
   const onCollapse = (value: any) => {
     setCollapsed(value)
@@ -17,15 +21,25 @@ export const SideBar = () => {
     <Sider collapsible collapsed={collasped} onCollapse={onCollapse}>
       <div className={classes.logo} />
       <Menu theme="dark" mode="inline" defaultSelectedKeys={['1']}>
-        <Menu.Item key="1" icon={<UserOutlined />}>
-          Пункт 1
-        </Menu.Item>
-        <Menu.Item key="2" icon={<VideoCameraOutlined />}>
-          Пункт 2
-        </Menu.Item>
-        <Menu.Item key="3" icon={<UploadOutlined />}>
-          Пункт 3
-        </Menu.Item>
+        {typeAuth === 'user' ? (
+          <>
+            <Menu.Item key="1" icon={<UserOutlined />}>
+              <Link to={`${routes.main}${routes.client}${routes.user_info}`}>Информация</Link>
+            </Menu.Item>
+            <Menu.Item key="2" icon={<UserOutlined />}>
+              <Link to={`${routes.main}${routes.client}${routes.appointment}`}>Запись на примем</Link>
+            </Menu.Item>
+          </>
+        ) : (
+          <>
+            <Menu.Item key="1" icon={<UserOutlined />}>
+              <Link to={`${routes.main}${routes.doctor}${routes.doctor_info}`}>Информация</Link>
+            </Menu.Item>
+            <Menu.Item key="2" icon={<UserOutlined />}>
+              <Link to={`${routes.main}${routes.doctor}${routes.doctor_card_record}`}>Записи в картах</Link>
+            </Menu.Item>
+          </>
+        )}
       </Menu>
     </Sider>
   )

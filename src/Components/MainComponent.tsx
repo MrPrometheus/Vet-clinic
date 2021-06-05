@@ -1,4 +1,4 @@
-import { Button, Layout } from 'antd'
+import { Button, Layout, Typography } from 'antd'
 import AuthContext from './context/AuthContext'
 import MainRoutes from './routing/MainRoutes'
 import React, { useContext } from 'react'
@@ -8,7 +8,7 @@ import classes from './MainComponent.module.css'
 const { Footer, Header, Content } = Layout
 
 export const MainComponent = () => {
-  const { toggleIsAuth } = useContext(AuthContext)
+  const { toggleIsAuth, typeAuth } = useContext(AuthContext)
   return (
     <>
       <SideBar />
@@ -23,6 +23,9 @@ export const MainComponent = () => {
             justifyContent: 'flex-end',
           }}
         >
+          <Typography style={{ flexGrow: 1, marginLeft: '16px' }}>
+            {typeAuth === 'user' ? 'Клиент' : 'Доктор'}
+          </Typography>
           <Button style={{ marginRight: '16px' }} onClick={() => toggleIsAuth && toggleIsAuth(false)}>
             Выход
           </Button>

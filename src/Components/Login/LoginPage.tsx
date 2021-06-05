@@ -9,11 +9,15 @@ import classes from './LoginPage.module.css'
 const APP_VERSION = '1.0.0'
 
 export const LoginPage = () => {
-  const { toggleIsAuth } = useContext(AuthContext)
+  const { toggleIsAuth, toggleTypeAuth } = useContext(AuthContext)
   const onFinish = (values: any) => {
     // тут вызов Api
-    if (toggleIsAuth && values.password === '1' && values.username === '1') {
+    if (toggleTypeAuth && toggleIsAuth && values.password === '1' && values.username === '1') {
       toggleIsAuth(true)
+      toggleTypeAuth('user')
+    } else if (toggleTypeAuth && toggleIsAuth && values.password === '2' && values.username === '2') {
+      toggleIsAuth(true)
+      toggleTypeAuth('doctor')
     }
   }
 
