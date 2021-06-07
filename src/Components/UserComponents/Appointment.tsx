@@ -91,6 +91,7 @@ export const Appointment = () => {
         <Space size="middle">
           <a
             onClick={() => {
+              if (record.tags[0] === 'Ваш прием') return
               showModal(record.id)
             }}
           >

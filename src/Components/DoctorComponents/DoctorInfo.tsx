@@ -135,7 +135,15 @@ export const DoctorInfo = () => {
           )}
           <a
             onClick={() => {
-              setDataSrc(dataSrc.filter((value) => value.key !== record.key))
+              fetch(`${baseUrl}/schedules?id=${record.id}`, {
+                method: 'DELETE',
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                  'Content-Type': 'application/json',
+                },
+              }).then(() => {
+                setDataSrc(dataSrc.filter((value) => value.key !== record.key))
+              })
             }}
           >
             Удалить прием
@@ -199,6 +207,7 @@ export const DoctorInfo = () => {
   }
 
   const showModal = (card: string) => {
+    console.log(card)
     setCardId(card)
     setIsModalVisible(true)
   }

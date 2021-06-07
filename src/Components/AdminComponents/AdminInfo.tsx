@@ -213,8 +213,9 @@ const EditableTable = () => {
             <Typography.Link
               disabled={editingKey !== ''}
               onClick={() => {
-                const i = data.filter((item) => record.key !== item.key)[0]
-                fetch(`${baseUrl}/staff?id=${i}`, {
+                const i = data.filter((item) => record.key === item.key)[0]
+                if (i.userRole === 'ADMIN') return
+                fetch(`${baseUrl}/staff?id=${i.id}`, {
                   method: 'DELETE',
                   headers: {
                     Authorization: `Bearer ${token}`,
@@ -254,14 +255,6 @@ const EditableTable = () => {
   })
 
   const onFinish = (fieldsValue: any) => {
-    const newData: StaffType = {
-      key: data.length.toString(),
-      email: fieldsValue.email,
-      password: fieldsValue.password,
-      userRole: 'DOCTOR',
-    }
-    setData([...data, newData])
-
     fetch(`${baseUrl}/auth/sign-up?id=${id}`, {
       method: 'POST',
       headers: {
@@ -273,6 +266,34 @@ const EditableTable = () => {
         userRole: 'DOCTOR',
         password: fieldsValue.password,
       }),
+    }).then(() => {
+      fetch(`${baseUrl}/staff/all`, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      })
+        .then((res) => res.json())
+        .then((d) => {
+          setData(
+            d.map((item: any, index: number) => {
+              return {
+                key: +index,
+                id: item.id,
+                name: item.name ?? '-',
+                surname: item.surname ?? '-',
+                position: item.position ?? '-',
+                experience: item.experience ?? '-',
+                email: item.email,
+                userRole: item.userRole,
+              }
+            })
+          )
+        })
+        .catch((e) => {
+          console.log(e)
+        })
     })
   }
 
