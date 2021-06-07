@@ -1,25 +1,18 @@
 import { Button, Form, Input, Modal, Table, Tag, Typography } from 'antd'
-import { useState } from 'react'
+import { baseUrl } from '../../APIs/APITools'
+import { useContext, useEffect, useState } from 'react'
+import AuthContext from '../context/AuthContext'
 import classes from './DoctorInfo.module.css'
 const { Title } = Typography
 
-interface DataType {
+export interface DataType {
   key: string
   description: string
   delay: number
   begin: string
   tags: string[]
+  id?: string
 }
-
-const data: DataType[] = [
-  {
-    key: '0',
-    description: 'ничего',
-    delay: 100,
-    begin: '01.01.2021',
-    tags: ['свободно'],
-  },
-]
 
 export const DoctorInfo = () => {
   const [name] = useState('Дима')
@@ -27,9 +20,50 @@ export const DoctorInfo = () => {
   const [position] = useState('Хирург')
   const [experience] = useState('че то там')
 
+  const { token, id } = useContext(AuthContext)
+
   const [isModalVisible, setIsModalVisible] = useState(false)
 
-  const [dataSrc, setDataSrc] = useState(data)
+  const [dataSrc, setDataSrc] = useState<DataType[]>([])
+
+  useEffect(() => {
+    fetch(`${baseUrl}/schedules/by-doctor?id=${id}`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    })
+      .then((res) => res.json())
+      .then((d_all) => {
+        fetch(`${baseUrl}/appointments/doctor?id=${id}`, {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        })
+          .then((r) => r.json())
+          .then((dd) => {
+            setDataSrc(
+              d_all.map((item: any, index: number) => {
+                console.log(dd.find((obj: any) => obj.scheduleItemId === item.id))
+                return {
+                  tags: dd.find((obj: any) => obj.scheduleItemId === item.id) ? ['Клиент Записан'] : ['Свободно'],
+                  begin: item.timeStart,
+                  delay: item.duration,
+                  description: item.description,
+                  key: index.toString(),
+                  id: item.id,
+                }
+              })
+            )
+          })
+      })
+      .catch((e) => {
+        console.log(e)
+      })
+  }, [])
 
   const columns = [
     {
@@ -48,19 +82,14 @@ export const DoctorInfo = () => {
       key: 'begin',
     },
     {
-      title: 'Теги',
+      title: 'Тэги',
       key: 'tags',
       dataIndex: 'tags',
       // eslint-disable-next-line react/display-name
       render: (tags: any) => (
         <>
           {tags.map((tag: any) => {
-            let color
-            if (tag === 'свободно') {
-              color = 'green'
-            } else if (tag === 'занято') {
-              color = 'geekblue'
-            }
+            const color = tag === 'Клиент Записан' ? 'volcano' : 'green'
             return (
               <Tag color={color} key={tag}>
                 {tag.toUpperCase()}
@@ -93,14 +122,56 @@ export const DoctorInfo = () => {
   ]
 
   const onFinish = (fieldsValue: any) => {
-    const newData: DataType = {
-      key: dataSrc.length.toString(),
-      description: fieldsValue.description,
-      delay: fieldsValue.delay,
-      begin: fieldsValue.begin,
-      tags: ['свободно'],
-    }
-    setDataSrc([...dataSrc, newData])
+    fetch(`${baseUrl}/schedules`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        timeStart: fieldsValue.begin,
+        duration: +fieldsValue.delay,
+        staffId: id,
+        description: fieldsValue.description,
+      }),
+    }).then(() => {
+      fetch(`${baseUrl}/schedules/by-doctor?id=${id}`, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      })
+        .then((res) => res.json())
+        .then((d_all) => {
+          fetch(`${baseUrl}/appointments/doctor?id=${id}`, {
+            method: 'GET',
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+          })
+            .then((r) => r.json())
+            .then((dd) => {
+              setDataSrc(
+                d_all.map((item: any, index: number) => {
+                  console.log(dd.find((obj: any) => obj.scheduleItemId === item.id))
+                  return {
+                    tags: dd.find((obj: any) => obj.scheduleItemId === item.id) ? ['Клиент Записан'] : ['Свободно'],
+                    begin: item.timeStart,
+                    delay: item.duration,
+                    description: item.description,
+                    key: index.toString(),
+                    id: item.id,
+                  }
+                })
+              )
+            })
+        })
+        .catch((e) => {
+          console.log(e)
+        })
+    })
   }
 
   const showModal = () => {

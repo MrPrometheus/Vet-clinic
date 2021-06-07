@@ -1,10 +1,12 @@
 import { Button, Form, Input, InputNumber, Modal, Popconfirm, Table, Typography } from 'antd'
-import { HTMLAttributes, Key, ReactNode, useEffect, useState } from 'react'
+import { HTMLAttributes, Key, ReactNode, useContext, useEffect, useState } from 'react'
+import { baseUrl } from '../../APIs/APITools'
+import AuthContext from '../context/AuthContext'
 import CardRecord from './CardRecord'
 import classes from './UserInfo.module.css'
 const { Title } = Typography
 
-interface Item {
+export interface Item {
   key: string
   age: number
   type: string
@@ -68,9 +70,31 @@ const EditableTable = (props: EditableTableType) => {
   const [data, setData] = useState<Item[]>([])
   const [editingKey, setEditingKey] = useState('')
 
+  const { id, token } = useContext(AuthContext)
+
   useEffect(() => {
-    console.log(data)
-  }, [data])
+    fetch(`${baseUrl}/card/my-cards?clientId=${id}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((res) => res.json())
+      .then((d) => {
+        setData(
+          d.map((item: any) => {
+            return {
+              id: item.id,
+              clientId: id,
+              age: item.age,
+              animalType: item.type,
+              name: item.name,
+              weight: item.weight,
+            }
+          })
+        )
+      })
+  }, [])
 
   const isEditing = (record: Item) => record.key === editingKey
 
@@ -189,6 +213,20 @@ const EditableTable = (props: EditableTableType) => {
       weight: fieldsValue.weight,
     }
     setData([...data, newData])
+    fetch(`${baseUrl}/card`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        clientId: id,
+        age: fieldsValue.age,
+        animalType: fieldsValue.type,
+        name: fieldsValue.name,
+        weight: fieldsValue.weight,
+      }),
+    })
   }
 
   return (
@@ -271,10 +309,6 @@ export const UserInfo = () => {
   const handleCancel = () => {
     setIsModalVisible(false)
   }
-
-  useEffect(() => {
-    console.log('ТУт вызов апи для мед карт')
-  })
 
   return (
     <div>

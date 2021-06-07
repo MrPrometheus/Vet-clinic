@@ -1,98 +1,179 @@
-import { Space, Table, Tag } from 'antd'
+import { DataType } from '../DoctorComponents/DoctorInfo'
+import { Item } from './UserInfo'
+import { Modal, Space, Table, Typography } from 'antd'
+import { baseUrl } from '../../APIs/APITools'
+import { useContext, useEffect, useState } from 'react'
+import AuthContext from '../context/AuthContext'
 
-const columns = [
-  {
-    title: 'Имя врача',
-    dataIndex: 'name',
-    key: 'name',
-    // eslint-disable-next-line react/display-name
-    render: (text: any) => <a>{text}</a>,
-  },
-  {
-    title: 'Описание',
-    dataIndex: 'description',
-    key: 'description',
-  },
-  {
-    title: 'Длительность приема',
-    dataIndex: 'delay',
-    key: 'delay',
-  },
-  {
-    title: 'Начало приема',
-    dataIndex: 'begin',
-    key: 'begin',
-  },
-  {
-    title: 'Теги',
-    key: 'tags',
-    dataIndex: 'tags',
-    // eslint-disable-next-line react/display-name
-    render: (tags: any) => (
-      <>
-        {tags.map((tag: any) => {
-          let color
-          if (tag === 'свободно') {
-            color = 'green'
-          } else if (tag === 'занято') {
-            color = 'geekblue'
-          }
-          return (
-            <Tag color={color} key={tag}>
-              {tag.toUpperCase()}
-            </Tag>
-          )
-        })}
-      </>
-    ),
-  },
-  {
-    title: 'Записаться',
-    key: 'action',
-    // eslint-disable-next-line react/display-name,no-unused-vars
-    render: (text: any, record: any) => (
-      <Space size="middle">
-        <a
-          onClick={() => {
-            console.log('я записан')
-          }}
-        >
-          Записаться
-        </a>
-      </Space>
-    ),
-  },
-]
+interface AppointmentDataType extends DataType {
+  id: string
+}
 
-const data = [
-  {
-    key: '1',
-    name: 'John Brown',
-    description: 'ничего',
-    delay: '100',
-    begin: '01.01.2021',
-    tags: ['свободно'],
-  },
-  {
-    key: '2',
-    name: 'John Brown',
-    description: 'ничего',
-    delay: '100',
-    begin: '01.01.2021',
-    tags: ['свободно'],
-  },
-  {
-    key: '3',
-    name: 'John Brown',
-    description: 'ничего',
-    delay: '100',
-    begin: '01.01.2021',
-    tags: ['свободно'],
-  },
-]
+interface AnimalsType extends Item {
+  id: string
+}
 
 export const Appointment = () => {
-  return <Table columns={columns} dataSource={data} />
+  const [dataSrc, setDataSrc] = useState<AppointmentDataType[]>([])
+
+  const { id, token } = useContext(AuthContext)
+
+  const [isModalVisible, setIsModalVisible] = useState(false)
+  const [openAppId, setOpenAppId] = useState<string>('')
+
+  const [animals, setAnimals] = useState<AnimalsType[]>([])
+  const [animalId, setAnimalId] = useState<string>('')
+  const [animalName, setAnimalName] = useState<string>('')
+
+  const showModal = (_id: string) => {
+    setIsModalVisible(true)
+    setOpenAppId(_id)
+  }
+
+  const handleOk = () => {
+    fetch(`${baseUrl}/appointments`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ scheduleItemId: openAppId, patientCardId: animalId }),
+    }).then(() => {
+      setIsModalVisible(false)
+      setOpenAppId('')
+    })
+  }
+
+  const handleCancel = () => {
+    setOpenAppId('')
+    setIsModalVisible(false)
+  }
+
+  const columns = [
+    {
+      title: 'Описание',
+      dataIndex: 'description',
+      key: 'description',
+    },
+    {
+      title: 'Длительность приема',
+      dataIndex: 'delay',
+      key: 'delay',
+    },
+    {
+      title: 'Начало приема',
+      dataIndex: 'begin',
+      key: 'begin',
+    },
+    {
+      title: 'Записаться',
+      key: 'action',
+      // eslint-disable-next-line react/display-name,no-unused-vars
+      render: (text: any, record: any) => (
+        <Space size="middle">
+          <a
+            onClick={() => {
+              showModal(record.id)
+            }}
+          >
+            Записаться
+          </a>
+        </Space>
+      ),
+    },
+  ]
+
+  const columnsAnimals = [
+    {
+      title: 'Кличка',
+      dataIndex: 'name',
+      width: '20%',
+      editable: true,
+    },
+    {
+      title: 'Возраст',
+      dataIndex: 'age',
+      width: '20%',
+      editable: true,
+    },
+    {
+      title: 'Вес',
+      dataIndex: 'weight',
+      width: '20%',
+      editable: true,
+    },
+    {
+      title: 'Вид',
+      dataIndex: 'type',
+      width: '20%',
+      editable: true,
+    },
+  ]
+
+  useEffect(() => {
+    fetch(`${baseUrl}/card/my-cards?clientId=${id}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((res) => res.json())
+      .then((d) => {
+        setAnimals(
+          d.map((item: any, index: number) => {
+            return {
+              id: item.id,
+              clientId: id,
+              age: item.age,
+              animalType: item.type,
+              name: item.name,
+              weight: item.weight,
+              key: index.toString(),
+            }
+          })
+        )
+      })
+  }, [])
+
+  useEffect(() => {
+    fetch(`${baseUrl}/schedules`)
+      .then((res) => res.json())
+      .then((d) => {
+        setDataSrc(
+          d.map((item: any, index: number) => {
+            return {
+              begin: item.timeStart,
+              delay: item.duration,
+              description: item.description,
+              key: index.toString(),
+              id: item.id,
+            }
+          })
+        )
+      })
+      .catch((e) => {
+        console.log(e)
+      })
+  }, [])
+
+  return (
+    <>
+      <Table columns={columns} dataSource={dataSrc} />
+      <Modal width={1000} title="Выбор питомца" visible={isModalVisible} onOk={handleOk} onCancel={handleCancel}>
+        <Table
+          onRow={(record) => ({
+            onDoubleClick: () => {
+              setAnimalName(record.name)
+              setAnimalId(record.id)
+            },
+          })}
+          dataSource={animals}
+          columns={columnsAnimals}
+        />
+        <Typography>Выбрано животное с кличкой {animalName}</Typography>
+      </Modal>
+    </>
+  )
 }
 
 export default Appointment
