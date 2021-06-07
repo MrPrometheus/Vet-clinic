@@ -1,21 +1,15 @@
 import { Table } from 'antd'
+import { baseUrl } from '../../APIs/APITools'
+import { useContext, useEffect, useState } from 'react'
+import AuthContext from '../context/AuthContext'
 
-const dataSource = [
-  {
-    key: '1',
-    description: 'Фигня какая то',
-    diagnosis: 'сломана нога',
-    recommendation: 'Ампутировать ногу',
-    date: '10.10.2021',
-  },
-  {
-    key: '2',
-    description: 'Фигня какая то',
-    diagnosis: 'сломана нога',
-    recommendation: 'Ампутировать ногу',
-    date: '10.10.2021',
-  },
-]
+interface Card {
+  key: string
+  description: string
+  diagnosis: string
+  recommendation: string
+  date: string
+}
 
 const columns = [
   {
@@ -25,13 +19,13 @@ const columns = [
   },
   {
     title: 'Диагноз',
-    dataIndex: 'diagnosis',
-    key: 'diagnosis',
+    dataIndex: 'diagnose',
+    key: 'diagnose',
   },
   {
     title: 'Рекомендация',
-    dataIndex: 'recommendation',
-    key: 'recommendation',
+    dataIndex: 'prescription',
+    key: 'prescription',
   },
   {
     title: 'Дата записи',
@@ -40,8 +34,29 @@ const columns = [
   },
 ]
 
-export const CardRecord = () => {
-  return <Table dataSource={dataSource} columns={columns} />
+export interface CardRecordType {
+  cardId: string
+}
+
+// eslint-disable-next-line no-unused-vars
+export const CardRecord = (props: CardRecordType) => {
+  const [dataSrc, setDataSrc] = useState<Card[]>([])
+  const { token } = useContext(AuthContext)
+
+  useEffect(() => {
+    fetch(`${baseUrl}/record/by-card-id?id=${props.cardId}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((res) => res.json())
+      .then((d) => {
+        setDataSrc(d)
+      })
+  }, [props.cardId])
+
+  return <Table dataSource={dataSrc} columns={columns} />
 }
 
 export default CardRecord

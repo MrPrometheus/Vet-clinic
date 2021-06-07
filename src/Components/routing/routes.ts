@@ -7,4 +7,7 @@ export default {
   user_info: '/user_info',
   doctor_info: '/doctor_info',
   doctor_card_record: '/doctor_card_record',
+  admin: '/admin',
+  admin_info: '/admin_info',
+  admin_records: '/admin_records',
 }

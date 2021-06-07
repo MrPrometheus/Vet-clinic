@@ -29,8 +29,9 @@ export const LoginPage = () => {
           if (d.userRole === 'CLIENT') {
             toggleTypeAuth('user')
           } else if (d.userRole === 'DOCTOR') {
-            console.log('asddasda')
             toggleTypeAuth('doctor')
+          } else {
+            toggleTypeAuth('admin')
           }
         }
         console.log(d)

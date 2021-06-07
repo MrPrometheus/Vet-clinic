@@ -1,5 +1,7 @@
 import { Redirect, Switch } from 'react-router'
+import AdminInfo from '../AdminComponents/AdminInfo'
 import Appointment from '../UserComponents/Appointment'
+import Busy from '../AdminComponents/Busy'
 import DoctorCardRecord from '../DoctorComponents/DoctorCardRecord'
 import DoctorInfo from '../DoctorComponents/DoctorInfo'
 import PrivateRoute from './common/PrivateRoute'
@@ -20,6 +22,12 @@ export const MainRoutes = () => {
       </PrivateRoute>
       <PrivateRoute path={`${routes.main}${routes.doctor}${routes.doctor_card_record}`}>
         <DoctorCardRecord />
+      </PrivateRoute>
+      <PrivateRoute path={`${routes.main}${routes.admin}${routes.admin_info}`}>
+        <AdminInfo />
+      </PrivateRoute>
+      <PrivateRoute path={`${routes.main}${routes.admin}${routes.admin_records}`}>
+        <Busy />
       </PrivateRoute>
       <PrivateRoute path={`${routes.main}`}>
         <div>Дашборд</div>

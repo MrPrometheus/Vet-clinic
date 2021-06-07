@@ -30,13 +30,22 @@ export const SideBar = () => {
               <Link to={`${routes.main}${routes.client}${routes.appointment}`}>Запись на примем</Link>
             </Menu.Item>
           </>
-        ) : (
+        ) : typeAuth === 'doctor' ? (
           <>
             <Menu.Item key="1" icon={<UserOutlined />}>
               <Link to={`${routes.main}${routes.doctor}${routes.doctor_info}`}>Информация</Link>
             </Menu.Item>
             <Menu.Item key="2" icon={<UserOutlined />}>
               <Link to={`${routes.main}${routes.doctor}${routes.doctor_card_record}`}>Записи в картах</Link>
+            </Menu.Item>
+          </>
+        ) : (
+          <>
+            <Menu.Item key="1" icon={<UserOutlined />}>
+              <Link to={`${routes.main}${routes.admin}${routes.admin_info}`}>Персонал</Link>
+            </Menu.Item>
+            <Menu.Item key="2" icon={<UserOutlined />}>
+              <Link to={`${routes.main}${routes.admin}${routes.admin_records}`}>Приемы</Link>
             </Menu.Item>
           </>
         )}

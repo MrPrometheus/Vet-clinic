@@ -12,19 +12,40 @@ export interface DataType {
   begin: string
   tags: string[]
   id?: string
+  cardId?: string
 }
 
 export const DoctorInfo = () => {
-  const [name] = useState('Дима')
-  const [surname] = useState('Васевич')
-  const [position] = useState('Хирург')
-  const [experience] = useState('че то там')
+  const [name, setName] = useState('')
+  const [surname, setSurname] = useState('')
+  const [position, setPosition] = useState('')
+  const [experience, setExperience] = useState('')
 
   const { token, id } = useContext(AuthContext)
 
+  const [cardId, setCardId] = useState<string>('')
   const [isModalVisible, setIsModalVisible] = useState(false)
 
   const [dataSrc, setDataSrc] = useState<DataType[]>([])
+
+  useEffect(() => {
+    fetch(`${baseUrl}/staff/by-id?id=${id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    })
+      .then((res) => res.json())
+      .then((d) => {
+        setSurname(d.surname ?? 'Не заполнено')
+        setName(d.name ?? 'Не заполнено')
+        setExperience(d.experience ?? 'Не заполнено')
+        setPosition(d.position ?? 'Не заполнено')
+      })
+      .catch((e) => {
+        console.log(e)
+      })
+  }, [])
 
   useEffect(() => {
     fetch(`${baseUrl}/schedules/by-doctor?id=${id}`, {
@@ -55,6 +76,7 @@ export const DoctorInfo = () => {
                   description: item.description,
                   key: index.toString(),
                   id: item.id,
+                  cardId: dd.find((obj: any) => obj.scheduleItemId === item.id)?.patientCardId,
                 }
               })
             )
@@ -106,9 +128,11 @@ export const DoctorInfo = () => {
       // eslint-disable-next-line react/display-name
       render: (text: any, record: any) => (
         <>
-          <a style={{ marginRight: '16px' }} onClick={() => showModal()}>
-            Добавить запись
-          </a>
+          {record.cardId && (
+            <a style={{ marginRight: '16px' }} onClick={() => showModal(record.cardId)}>
+              Добавить запись
+            </a>
+          )}
           <a
             onClick={() => {
               setDataSrc(dataSrc.filter((value) => value.key !== record.key))
@@ -174,7 +198,8 @@ export const DoctorInfo = () => {
     })
   }
 
-  const showModal = () => {
+  const showModal = (card: string) => {
+    setCardId(card)
     setIsModalVisible(true)
   }
 
@@ -187,8 +212,27 @@ export const DoctorInfo = () => {
   }
 
   const onFinishCard = (fieldsValue: any) => {
-    console.log('Добавил запись', fieldsValue)
-    handleCancel()
+    fetch(`${baseUrl}/record`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        patientCardId: cardId,
+        staffId: id,
+        date: new Date().toISOString().substr(0, 23),
+        diagnose: fieldsValue.diagnose,
+        description: fieldsValue.description,
+        prescription: fieldsValue.prescription,
+      }),
+    })
+      .then(() => {
+        handleCancel()
+      })
+      .catch((e) => {
+        console.log(e)
+      })
   }
 
   return (
@@ -230,19 +274,23 @@ export const DoctorInfo = () => {
       <Table columns={columns} dataSource={dataSrc} />
       <Modal title="Добавить запись в карту" visible={isModalVisible} onOk={handleOk} onCancel={handleCancel}>
         <Form onFinish={onFinishCard}>
-          <Form.Item className={classes.form_input} name="description">
+          <Form.Item
+            className={classes.form_input}
+            name="description"
+            rules={[{ required: true, message: 'Пожалуйста введите Описание!' }]}
+          >
             <Input autoFocus={true} className={classes.input_style} placeholder="Описание" />
           </Form.Item>
           <Form.Item
             className={classes.form_input}
-            name="diagnosis"
+            name="diagnose"
             rules={[{ required: true, message: 'Пожалуйста введите Диагноз!' }]}
           >
             <Input className={classes.input_style} placeholder="Диагноз" />
           </Form.Item>
           <Form.Item
             className={classes.form_input}
-            name="recommendation"
+            name="prescription"
             rules={[{ required: true, message: 'Пожалуйста введите Рекомендацию!' }]}
           >
             <Input className={classes.input_style} placeholder="Рекомендация" />

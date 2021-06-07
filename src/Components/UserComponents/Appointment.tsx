@@ -1,6 +1,6 @@
 import { DataType } from '../DoctorComponents/DoctorInfo'
 import { Item } from './UserInfo'
-import { Modal, Space, Table, Typography } from 'antd'
+import { Modal, Space, Table, Tag, Typography } from 'antd'
 import { baseUrl } from '../../APIs/APITools'
 import { useContext, useEffect, useState } from 'react'
 import AuthContext from '../context/AuthContext'
@@ -64,6 +64,24 @@ export const Appointment = () => {
       title: 'Начало приема',
       dataIndex: 'begin',
       key: 'begin',
+    },
+    {
+      title: 'Тэги',
+      key: 'tags',
+      dataIndex: 'tags',
+      // eslint-disable-next-line react/display-name
+      render: (tags: any) => (
+        <>
+          {tags.map((tag: any) => {
+            const color = tag === 'Ваш прием' ? 'volcano' : 'green'
+            return (
+              <Tag color={color} key={tag}>
+                {tag.toUpperCase()}
+              </Tag>
+            )
+          })}
+        </>
+      ),
     },
     {
       title: 'Записаться',
@@ -136,20 +154,44 @@ export const Appointment = () => {
   }, [])
 
   useEffect(() => {
-    fetch(`${baseUrl}/schedules`)
+    fetch(`${baseUrl}/schedules/by-client-id?id=${id}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    })
       .then((res) => res.json())
       .then((d) => {
-        setDataSrc(
-          d.map((item: any, index: number) => {
-            return {
-              begin: item.timeStart,
-              delay: item.duration,
-              description: item.description,
-              key: index.toString(),
-              id: item.id,
-            }
+        const data = d.map((item: any, index: number) => {
+          return {
+            begin: item.timeStart,
+            delay: item.duration,
+            description: item.description,
+            key: index.toString(),
+            id: item.id,
+            tags: ['Ваш прием'],
+          }
+        })
+        fetch(`${baseUrl}/schedules/free`, {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        })
+          .then((res) => res.json())
+          .then((dd) => {
+            const data_2 = dd.map((item: any, index: number) => {
+              return {
+                begin: item.timeStart,
+                delay: item.duration,
+                description: item.description,
+                key: (index * 100).toString(),
+                id: item.id,
+                tags: ['Свободно'],
+              }
+            })
+            setDataSrc([...data, ...data_2])
           })
-        )
       })
       .catch((e) => {
         console.log(e)

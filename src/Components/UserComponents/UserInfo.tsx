@@ -12,9 +12,11 @@ export interface Item {
   type: string
   name: string
   weight: number
+  id?: string
 }
 
 interface EditableCellProps extends HTMLAttributes<HTMLElement> {
+  key: string
   editing: boolean
   dataIndex: string
   title: any
@@ -39,7 +41,7 @@ const EditableCell = ({
   const inputNode = inputType === 'number' ? <InputNumber /> : <Input />
 
   return (
-    <td {...restProps}>
+    <td {...restProps} key={restProps.key}>
       {editing ? (
         <Form.Item
           name={dataIndex}
@@ -61,7 +63,7 @@ const EditableCell = ({
 }
 
 interface EditableTableType {
-  clickCell: () => void
+  clickCell: (value: string) => void
 }
 
 // eslint-disable-next-line no-unused-vars
@@ -82,12 +84,13 @@ const EditableTable = (props: EditableTableType) => {
       .then((res) => res.json())
       .then((d) => {
         setData(
-          d.map((item: any) => {
+          d.map((item: any, index: number) => {
             return {
+              key: +index,
               id: item.id,
               clientId: id,
               age: item.age,
-              animalType: item.type,
+              type: item.animalType,
               name: item.name,
               weight: item.weight,
             }
@@ -270,8 +273,10 @@ const EditableTable = (props: EditableTableType) => {
       </Form>
       <Form form={form} component={false}>
         <Table
-          onRow={() => ({
-            onDoubleClick: () => props.clickCell(),
+          onRow={(record) => ({
+            onDoubleClick: () => {
+              props.clickCell(record.id ?? '')
+            },
           })}
           components={{
             body: {
@@ -293,12 +298,35 @@ const EditableTable = (props: EditableTableType) => {
 }
 
 export const UserInfo = () => {
-  const [name] = useState('Дима')
-  const [surname] = useState('Васевич')
+  const [name, setName] = useState('')
+  const [surname, setSurname] = useState('')
 
+  const { id, token } = useContext(AuthContext)
+
+  const [cardId, setCardId] = useState<string>('')
   const [isModalVisible, setIsModalVisible] = useState(false)
 
-  const showModal = () => {
+  const [isInfoEditing, setIsInfoEditing] = useState<boolean>(false)
+
+  useEffect(() => {
+    fetch(`${baseUrl}/client?id=${id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    })
+      .then((res) => res.json())
+      .then((d) => {
+        setSurname(d.surname ?? 'Не заполнено')
+        setName(d.name ?? 'Не заполнено')
+      })
+      .catch((e) => {
+        console.log(e)
+      })
+  }, [])
+
+  const showModal = (value: string) => {
+    setCardId(value)
     setIsModalVisible(true)
   }
 
@@ -310,16 +338,78 @@ export const UserInfo = () => {
     setIsModalVisible(false)
   }
 
+  const handleInfoEdit = () => {
+    setIsInfoEditing(true)
+  }
+
+  const onFinish = (fieldsValue: any) => {
+    fetch(`${baseUrl}/client`, {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        id,
+        name: fieldsValue.name,
+        surname: fieldsValue.surname,
+      }),
+    })
+      .then((res) => res.json())
+      .then((d) => {
+        setName(d.name)
+        setSurname(d.surname)
+        setIsInfoEditing(false)
+      })
+      .catch((e) => {
+        console.log(e)
+      })
+  }
+
   return (
     <div>
-      <Title level={2}>Информация</Title>
-      <Typography>
-        Клиент: {surname} {name}
-      </Typography>
+      <div style={{ display: 'flex', flexDirection: 'row' }}>
+        <Title style={{ marginRight: '24px' }} level={2}>
+          Информация
+        </Title>
+        {!isInfoEditing && (
+          <Button onClick={handleInfoEdit} style={{ marginRight: '24px' }}>
+            Редактировать информацию
+          </Button>
+        )}
+      </div>
+
+      {isInfoEditing ? (
+        <Form onFinish={onFinish}>
+          <div style={{ display: 'flex', flexDirection: 'row' }}>
+            <Form.Item
+              className={classes.form_input}
+              name="name"
+              rules={[{ required: true, message: 'Пожалуйста введите Имя!' }]}
+            >
+              <Input autoFocus={true} className={classes.input_style} placeholder="Имя" />
+            </Form.Item>
+            <Form.Item
+              className={classes.form_input}
+              name="surname"
+              rules={[{ required: true, message: 'Пожалуйста введите Фамилию!' }]}
+            >
+              <Input className={classes.input_style} placeholder="Фамилия" />
+            </Form.Item>
+          </div>
+          <Form.Item className={classes.form_submit}>
+            <Button className={classes.form_button_submit} type="primary" htmlType="submit">
+              Сохранить
+            </Button>
+          </Form.Item>
+        </Form>
+      ) : (
+        <Typography>{`Клиент: ${surname} ${name}`}</Typography>
+      )}
       <Typography style={{ marginTop: '16px', marginBottom: '8px' }}>Ваши медицинские карты:</Typography>
-      <EditableTable clickCell={showModal} />
+      <EditableTable clickCell={(value: string) => showModal(value)} />
       <Modal width={1000} title="Записи в карте" visible={isModalVisible} onOk={handleOk} onCancel={handleCancel}>
-        <CardRecord />
+        <CardRecord cardId={cardId} />
       </Modal>
     </div>
   )

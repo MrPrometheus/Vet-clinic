@@ -24,7 +24,7 @@ export const MainComponent = () => {
           }}
         >
           <Typography style={{ flexGrow: 1, marginLeft: '16px' }}>
-            {typeAuth === 'user' ? 'Клиент' : 'Доктор'}
+            {typeAuth === 'user' ? 'Клиент' : typeAuth === 'doctor' ? 'Доктор' : 'Администратор'}
           </Typography>
           <Button style={{ marginRight: '16px' }} onClick={() => toggleIsAuth && toggleIsAuth(false)}>
             Выход
