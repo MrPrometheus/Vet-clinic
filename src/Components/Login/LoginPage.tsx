@@ -80,7 +80,7 @@ export const LoginPage = () => {
             >
               <MainIcon style={{ marginTop: '4rem' }} />
 
-              <p className={classes.form_name}>Ветеринраная клиника</p>
+              <p className={classes.form_name}>Ветеринарная клиника</p>
 
               <Form.Item
                 className={classes.form_input}
@@ -123,7 +123,7 @@ export const LoginPage = () => {
             >
               <MainIcon style={{ marginTop: '4rem' }} />
 
-              <p className={classes.form_name}>Ветеринраная клиника</p>
+              <p className={classes.form_name}>Ветеринарная клиника</p>
 
               <Form.Item
                 className={classes.form_input}
